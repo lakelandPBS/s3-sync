@@ -10,14 +10,20 @@ s3Dir='pbs-ingest/kawe/';
 exclude=( "*.db" ".DS_Store" "*.jpg" ); # files to be excluded from upload
 
 # Rename local files according to directory and episode number
+
+echo "Checking for files that need renaming.";
+echo;
+
 for d in `ls -d ${localDir}*/`; do
 
     d=${d%/}; # remove trailing slash
 
+    echo;
     echo "${d} ############################################";
+    echo;
 
     # delete junk files
-    rm "${d}/.DS_Store" "${d}/Thumbs.db";
+    rm "${d}/.DS_Store" "${d}/Thumbs.db" 2>/dev/null;
 
     # rename each file
     for f in `ls -p $d | grep -v /`; do
@@ -43,5 +49,11 @@ for d in `ls -d ${localDir}*/`; do
 
 done;
 
+echo; echo "Done renaming files. Will now attempt to sync with your S3 bucket."; echo;
+
+echo "Running the following command:"; echo;
+echo "aws s3 sync ${localDir} s3://${s3Dir} "`for e in "${exclude[@]}"; do echo --exclude "${e}" ; done;`" --delete";
+echo;
+
 # Run the AWS CLI commmand
-#aws s3 sync $localDir s3://$s3Dir `for e in "${exclude[@]}"; do echo --exclude "${e}" ; done;` --delete
+aws s3 sync ${localDir} s3://${s3Dir} `for e in "${exclude[@]}"; do echo --exclude "${e}" ; done;` --delete
