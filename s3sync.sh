@@ -57,3 +57,12 @@ echo;
 
 # Run the AWS CLI commmand
 aws s3 sync ${localDir} s3://${s3Dir} `for e in "${exclude[@]}"; do echo --exclude "${e}" ; done;` --delete
+
+# Provide https URLs for the files... dirty but gets the job done.
+echo "#######################################################"
+echo " URLS TO ALL FILES IN BUCKET ";
+echo "#######################################################"
+j
+for url in `aws s3 ls s3://pbs-ingest/kawe/ --recursive --human-readable --summarize |cut -d ' ' -f 8`; do
+    aws s3 presign $url;
+done;
