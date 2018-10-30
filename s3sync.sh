@@ -6,13 +6,18 @@
 # This script syncs a designated directory to our PBS ingest directory on Amazon S3
 
 localDir='/media/sf_Media_Manager/';
-s3Dir='pbs-ingest/kawe/';
+s3BucketName='pbs-ingest'
+s3Dir='kawe';
+syncDir="${s3BucketName}/kawe/";
 exclude=( "*.db" ".DS_Store" "*.jpg" ); # files to be excluded from upload
 
 # Rename local files according to directory and episode number
 
 echo "Checking for files that need renaming.";
 echo;
+
+# delete junk files
+rm "${localDir}/.DS_Store" "${localDir}/Thumbs.db" 2>/dev/null;
 
 for d in `ls -d ${localDir}*/`; do
 
@@ -36,7 +41,7 @@ for d in `ls -d ${localDir}*/`; do
         # fNewName=${d##*/}-${fNum}.${fExt}; # show name, episode num, and ext
         fNewName=${fNum}.${fExt}; #episode number and file ext only
 
-        mv "${d}/${f}" "${d}/${fNewName}"
+        mv "${d}/${f}" "${d}/${fNewName}" 2>/dev/null;
 
         # debugging stuff
         #echo f is $f;
@@ -52,17 +57,20 @@ done;
 echo; echo "Done renaming files. Will now attempt to sync with your S3 bucket."; echo;
 
 echo "Running the following command:"; echo;
-echo "aws s3 sync ${localDir} s3://${s3Dir} "`for e in "${exclude[@]}"; do echo --exclude "${e}" ; done;`" --delete";
+echo "aws s3 sync ${localDir} s3://${syncDir} "`for e in "${exclude[@]}"; do echo --exclude "${e}" ; done;`" --delete";
 echo;
 
 # Run the AWS CLI commmand
-aws s3 sync ${localDir} s3://${s3Dir} `for e in "${exclude[@]}"; do echo --exclude "${e}" ; done;` --delete
+#aws s3 sync ${localDir} s3://${syncDir} `for e in "${exclude[@]}"; do echo "--exclude ${e}" ; done;` --delete
 
 # Provide https URLs for the files... dirty but gets the job done.
 echo "#######################################################"
-echo " URLS TO ALL FILES IN BUCKET ";
+echo " GETTING URLS FOR ALL FILES IN BUCKET ";
 echo "#######################################################"
+sleep 5 # wait a moment before doing ls
 
-for url in `aws s3 ls s3://pbs-ingest/kawe/ --recursive --human-readable --summarize |cut -d ' ' -f 8`; do
-    aws s3 presign $url;
+
+for file in `aws s3 ls s3://${syncDir} --recursive | awk '{print $4}'`; do
+    #aws s3 presign $url;
+    echo "https://${s3BucketName}.s3.amazonaws.com/${file}";
 done;
