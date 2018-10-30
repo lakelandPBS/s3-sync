@@ -59,9 +59,12 @@ echo; echo "Done renaming files. Will now attempt to sync with your S3 bucket.";
 echo "Running the following command:"; echo;
 echo "aws s3 sync ${localDir} s3://${syncDir} "`for e in "${exclude[@]}"; do echo --exclude "${e}" ; done;`" --delete";
 echo;
-
+echo "Syncing..."
 # Run the AWS CLI commmand
-#aws s3 sync ${localDir} s3://${syncDir} `for e in "${exclude[@]}"; do echo "--exclude ${e}" ; done;` --delete
+aws s3 sync ${localDir} s3://${syncDir} `for e in "${exclude[@]}"; do echo "--exclude ${e}" ; done;` --delete
+echo;
+echo "Done syncing.";
+echo;
 
 # Provide https URLs for the files... dirty but gets the job done.
 echo "#######################################################"
@@ -74,3 +77,5 @@ for file in `aws s3 ls s3://${syncDir} --recursive | awk '{print $4}'`; do
     #aws s3 presign $url;
     echo "https://${s3BucketName}.s3.amazonaws.com/${file}";
 done;
+
+echo; echo "Done."; echo;
