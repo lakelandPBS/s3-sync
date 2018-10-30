@@ -62,7 +62,7 @@ aws s3 sync ${localDir} s3://${s3Dir} `for e in "${exclude[@]}"; do echo --exclu
 echo "#######################################################"
 echo " URLS TO ALL FILES IN BUCKET ";
 echo "#######################################################"
-j
+
 for url in `aws s3 ls s3://pbs-ingest/kawe/ --recursive --human-readable --summarize |cut -d ' ' -f 8`; do
     aws s3 presign $url;
 done;
