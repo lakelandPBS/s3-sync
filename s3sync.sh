@@ -12,9 +12,7 @@ syncDir="${s3BucketName}/kawe/";
 exclude=( "*.db" ".DS_Store" "*.jpg" ); # files to be excluded from upload
 
 # Rename local files according to directory and episode number
-
-echo "Checking for files that need renaming.";
-echo;
+echo; echo "Scanning directories and renaming files...";
 
 # delete junk files
 rm "${localDir}/.DS_Store" "${localDir}/Thumbs.db" 2>/dev/null;
@@ -23,9 +21,7 @@ for d in `ls -d ${localDir}*/`; do
 
     d=${d%/}; # remove trailing slash
 
-    echo;
-    echo "${d} ############################################";
-    echo;
+    echo "${d}"; 
 
     # delete junk files
     rm "${d}/.DS_Store" "${d}/Thumbs.db" 2>/dev/null;
