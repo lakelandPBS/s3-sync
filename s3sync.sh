@@ -14,7 +14,8 @@ syncDir="${s3BucketName}/kawe/";
 exclude=( "*.db" ".DS_Store" "*.jpg" ); # files to be excluded from upload
 
 # Check for required command
-type aws >/dev/null 2>&1 || { echo >&2 "awscli is needed by this script. Learn how to get it at https://aws.amazon.com/cli/"; exit 1; }
+type aws >/dev/null 2>&1 || { echo >&2 "awscli is needed by this script. Learn how to get it at https://aws.amazon.com/cli/ or try \`pip install awscli\`"; exit 1; }
+type pycaption >/dev/null 2>&1 || { echo >&2 "pycaption and pycaption-cli are needed by this script. You can try \`pip install pycaption\` and then manually install pycaption-cli."; echo "  pycaption-cli: https://github.com/jnorton001/pycaption-cli"; echo "  pycaption: https://github.com/pbs/pycaption"; exit 1; }
 
 # Rename local files according to directory and episode number
 echo; echo "Scanning directories and renaming files...";
