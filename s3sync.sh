@@ -5,13 +5,16 @@
 #
 # This script syncs a designated directory to our PBS ingest directory on Amazon S3
 
-s3syncDebugging=''; # enabling will disable running of aws sync
+s3syncDebugging='1'; # enabling will disable running of aws sync
 
 localDir='/media/sf_Media_Manager/';
 s3BucketName='pbs-ingest'
 s3Dir='kawe';
 syncDir="${s3BucketName}/kawe/";
 exclude=( "*.db" ".DS_Store" "*.jpg" ); # files to be excluded from upload
+
+# Check for required command
+type aws >/dev/null 2>&1 || { echo >&2 "awscli is needed by this script. Learn how to get it at https://aws.amazon.com/cli/"; exit 1; }
 
 # Rename local files according to directory and episode number
 echo; echo "Scanning directories and renaming files...";
