@@ -12,6 +12,8 @@ s3BucketName='pbs-ingest'
 s3Dir='kawe';
 syncDir="${s3BucketName}/kawe/";
 exclude=( "*.db" ".DS_Store" "*.jpg" ); # files to be excluded from upload
+SAVEIFS=$IFS; # store default IFS variable used by shell
+IFS=$(echo -en "\n\b");
 
 # Check for required command
 type aws >/dev/null 2>&1 || { echo >&2 "awscli is needed by this script. Learn how to get it at https://aws.amazon.com/cli/ or try \`pip install awscli\`"; exit 1; }
@@ -33,13 +35,17 @@ for d in `ls -d ${localDir}*/`; do
     # delete junk files
     rm "${d}/.DS_Store" "${d}/Thumbs.db" 2>/dev/null;
 
-    # rename each file
+    # give them a final name
     for f in `ls -p $d | grep -v /`; do
+        
+        # remove spaces from filename
+        rename 's/ /_/g' $f; 
+        nf="${f// /_}";
 
         # break down the filename
-        fName=${f%%.*};
+        fName=${nf%%.*};
         fNum=${fName//[^0-9]/};
-        fExt=${f##*.};
+        fExt=${nf##*.};
 
         # combine the new filename
         if [[ -z $fNum ]] || [[ $fName =~ '[0-9]' ]] && ! [[ $fName =~ '[a-zA-Z]' ]]; then # if no [episode] number is in the filename
@@ -66,6 +72,9 @@ for d in `ls -d ${localDir}*/`; do
 
 done;
 
+# Rest IFS before running the awscli command
+IFS=$SAVEIFS;
+
 echo; echo "Done renaming files. Will now attempt to sync with your S3 bucket."; echo;
 
 echo "Running the following command:"; echo;
@@ -91,7 +100,6 @@ if [[ -z $s3syncDebugging ]]; then
 
 
     for file in `aws s3 ls s3://${syncDir} --recursive | awk '{print $4}'`; do
-        #aws s3 presign $url;
         echo "https://${s3BucketName}.s3.amazonaws.com/${file}";
         echo "https://${s3BucketName}.s3.amazonaws.com/${file}" > urls.txt;
     done;
@@ -100,3 +108,4 @@ fi
 
 if ! [[ -z $s3syncDebugging ]]; then echo "DEBUGGING ENABLED: sync operation not done."; fi
 echo; echo "Done.";
+exit;
