@@ -85,12 +85,15 @@ if [[ -z $s3syncDebugging ]]; then
     echo "#######################################################"
     echo " GETTING URLS FOR ALL FILES IN BUCKET ";
     echo "#######################################################"
-    sleep 5 # wait a moment before doing ls
+    echo; echo "URLs will be saved to urls.txt";
+    echo '' > urls.txt;
+    sleep 3 # wait a moment before doing ls
 
 
     for file in `aws s3 ls s3://${syncDir} --recursive | awk '{print $4}'`; do
         #aws s3 presign $url;
         echo "https://${s3BucketName}.s3.amazonaws.com/${file}";
+        echo "https://${s3BucketName}.s3.amazonaws.com/${file}" > urls.txt;
     done;
 
 fi
