@@ -49,7 +49,7 @@ for d in `ls -d ${localDir}*/`; do
 
         # combine the new filename
         if [[ -z $fNum ]] || [[ $fName =~ '[0-9]' ]] && ! [[ $fName =~ '[a-zA-Z]' ]]; then # if no [episode] number is in the filename
-            fNewName=`basename $(dirname "${d}/${f}")`-`md5sum ${d}/${f} | awk '{print $1}' | tail -c 10`.${fExt};
+            fNewName="${fName}-"`md5sum ${d}/${f} | awk '{print $1}' | tail -c 10`.${fExt};
         else
             fNewName=${fNum}.${fExt}; #episode number and file ext only
         fi
