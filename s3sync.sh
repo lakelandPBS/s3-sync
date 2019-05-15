@@ -65,7 +65,7 @@ for d in `ls -d ${localDir}*/`; do
         fi
 
         if [[ "${f}" != "${fNewName}" && ! -z $fNewName ]]; then
-            echo "Renaming: ${d}/${f}" ... "${d}/${fNewName}";
+            echo "Renaming: ${f}" ... "${fNewName}";
             mv "${d}/${f}" "${d}/${fNewName}" 2>/dev/null;
         fi
 
