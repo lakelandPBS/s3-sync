@@ -26,6 +26,10 @@ rm "${localDir}/.DS_Store" "${localDir}/Thumbs.db" 2>/dev/null;
 
 for d in `ls -d ${localDir}*/`; do
 
+    if [ "${localDir}" = "preview" ]; then
+        break;
+    fi
+
     d=${d%/}; # remove trailing slash
 
     echo;
