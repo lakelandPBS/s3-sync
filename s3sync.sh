@@ -26,10 +26,6 @@ rm "${localDir}/.DS_Store" "${localDir}/Thumbs.db" 2>/dev/null;
 
 for d in `ls -d ${localDir}*/`; do
 
-    if [ "${localDir}" = "preview" ]; then
-        break;
-    fi
-
     d=${d%/}; # remove trailing slash
 
     echo;
@@ -41,35 +37,41 @@ for d in `ls -d ${localDir}*/`; do
 
     # give them a final name
     for f in `ls -p $d | grep -v /`; do
+
+        read fName fNum fExt nf <<< ''; # init clean vars
         
-        # remove spaces from filename
-        rename 's/ /_/g' $f; 
-        nf="${f// /_}";
+        nf=`echo "${f}" | sed -e 's/ /-/g' -e 's/[\(\)]//g'`;
 
         # break down the filename
         fName=${nf%%.*};
-        fNum=${fName//[^0-9]/};
         fExt=${nf##*.};
+        if [ `basename $d` != "previews" ]; then
+            fNum=${fName//[^0-9]/};
+        fi
 
         # combine the new filename
         if [[ -z $fNum ]] || [[ $fName =~ '[0-9]' ]] && ! [[ $fName =~ '[a-zA-Z]' ]]; then # if no [episode] number is in the filename
-            fNewName="${fName}-"`md5sum ${d}/${f} | awk '{print $1}' | tail -c 10`.${fExt};
+            md5=`md5sum ${d}/${f} | awk '{print $1}' | tail -c 10`;
+
+            # Check for an MD5 match
+            if [ "${md5}" = `echo $fName | tail -c 10` ]; then
+                echo "An MD5 sum match was found. Skipping ${f}";
+                fNewName='';
+            else
+                fNewName="${fName}-${md5}.${fExt}";
+            fi
         else
             fNewName=${fNum}.${fExt}; #episode number and file ext only
         fi
 
-        if ! [[ ${f} == ${fNewName} ]]; then
+        if [[ "${f}" != "${fNewName}" && ! -z $fNewName ]]; then
             echo "Renaming: ${d}/${f}" ... "${d}/${fNewName}";
             mv "${d}/${f}" "${d}/${fNewName}" 2>/dev/null;
         fi
 
         if ! [[ -z $s3syncDebugging ]]; then
             # debugging stuff
-            echo f is $f;
-            echo fName is $fName;
-            echo fNum is $fNum;
-            echo fExt is $fExt;
-            echo fNewName is $fNewName;
+            echo "d is ${d}; localDir is ${localDir}; f is ${f}; fName is ${fName}; fNum is ${fNum}; fExt is ${fExt}; md5 is ${md5}; fNewName is ${fNewName};";
         fi
 
     done;
