@@ -107,7 +107,7 @@ if [[ -z $s3syncDebugging ]]; then
 
     for file in `aws s3 ls s3://${syncDir} --recursive | awk '{print $4}'`; do
         echo "https://${s3BucketName}.s3.amazonaws.com/${file}";
-        echo "https://${s3BucketName}.s3.amazonaws.com/${file}" > urls.txt;
+        echo "https://${s3BucketName}.s3.amazonaws.com/${file}" >> urls.txt;
     done;
 
 fi
