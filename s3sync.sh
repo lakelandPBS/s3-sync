@@ -45,7 +45,7 @@ for d in `ls -d ${localDir}*/`; do
         # break down the filename
         fName=${nf%%.*};
         fExt=${nf##*.};
-        if [ `basename $d` != "previews" ] && [ `basename $d` != "other" ]; then
+        if [ `basename $d` != "previews" ] || [ `basename $d` != "other" ]; then
             fNum=${fName//[^0-9]/};
         fi
 
