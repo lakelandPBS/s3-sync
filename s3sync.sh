@@ -11,32 +11,41 @@ localDir='/media/sf_Media_Manager/';
 s3BucketName='pbs-ingest'
 s3Dir='kawe';
 syncDir="${s3BucketName}/kawe/";
-exclude=( "*.db" ".DS_Store" "*.jpg" ); # files to be excluded from upload
+exclude=("*.db" ".DS_Store" "*.jpg"); # files to be excluded from upload
+junkFiles=(".DS_Store" "Thumbs.db");
 SAVEIFS=$IFS; # store default IFS variable used by shell
 IFS=$(echo -en "\n\b");
 
 # Check for required command
-type aws >/dev/null 2>&1 || { echo >&2 "awscli is needed by this script. Learn how to get it at https://aws.amazon.com/cli/ or try \`pip install awscli\`"; exit 1; }
+type aws >/dev/null 2>&1 || {
+    echo >&2 "awscli is needed by this script. Learn how to get it at https://aws.amazon.com/cli/ or try \`pip install awscli\`"; exit 1;
+}
 
 # Rename local files according to directory and episode number
 echo; echo "Scanning directories and renaming files...";
 
-# delete junk files
-rm "${localDir}/.DS_Store" "${localDir}/Thumbs.db" 2>/dev/null;
+# delete junk files from each directory
+for file in "${junkFiles[@]}"; do
+    echo "Deleting all ${file} files.";
+    find ${localDir} -type f -name ${file} -delete;
+done;
 
 for d in `ls -d ${localDir}*/`; do
 
     d=${d%/}; # remove trailing slash
+    basename="$(basename $d)";
 
     echo;
     echo "${d}"; 
     echo "------------------------------------------------";
 
-    # delete junk files
-    rm "${d}/.DS_Store" "${d}/Thumbs.db" 2>/dev/null;
+    if ! [[ -z $s3syncDebugging ]]; then
+        # debugging stuff
+        echo "localDir: ${localDir}; d: ${d}; basename: ${basename}";
+    fi
 
     # give them a final name
-    for f in `ls -p $d | grep -v /`; do
+    for f in `ls -p $d | grep -v /`; do # loop through only files and no dirs
 
         read fName fNum fExt nf <<< ''; # init clean vars
         
@@ -45,12 +54,14 @@ for d in `ls -d ${localDir}*/`; do
         # break down the filename
         fName=${nf%%.*};
         fExt=${nf##*.};
-        if [ `basename $d` != "previews" ] || [ `basename $d` != "other" ]; then
+        if [ "$basename" == "previews" ] || [ "$basename" == "other" ]; then
+            fNum='';
+        else
             fNum=${fName//[^0-9]/};
         fi
 
         # combine the new filename
-        if [[ -z $fNum ]] || [[ $fName =~ '[0-9]' ]] && ! [[ $fName =~ '[a-zA-Z]' ]]; then # if no [episode] number is in the filename
+        if [[ -z $fNum ]]; then # if no [episode] number is in the filename
             md5=`md5sum ${d}/${f} | awk '{print $1}' | tail -c 10`;
 
             # Check for an MD5 match
@@ -71,7 +82,7 @@ for d in `ls -d ${localDir}*/`; do
 
         if ! [[ -z $s3syncDebugging ]]; then
             # debugging stuff
-            echo "d is ${d}; localDir is ${localDir}; f is ${f}; fName is ${fName}; fNum is ${fNum}; fExt is ${fExt}; md5 is ${md5}; fNewName is ${fNewName};";
+            echo "f is ${f}; fName is ${fName}; fNum is ${fNum}; fExt is ${fExt}; md5 is ${md5}; fNewName is ${fNewName};";
         fi
 
     done;
