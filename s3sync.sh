@@ -5,7 +5,7 @@
 #
 # This script syncs a designated directory to our PBS ingest directory on Amazon S3
 
-s3syncDebugging='1'; # enabling will disable running of aws sync
+s3syncDebugging=''; # enabling will disable running of aws sync
 
 localDir='/media/sf_Media_Manager/';
 s3BucketName='pbs-ingest'
