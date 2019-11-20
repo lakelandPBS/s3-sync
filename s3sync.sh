@@ -5,7 +5,7 @@
 #
 # This script syncs a designated directory to our PBS ingest directory on Amazon S3
 
-s3syncDebugging=''; # enabling will disable running of aws sync
+s3syncDebugging='1'; # enabling will disable running of aws sync
 
 localDir='/media/sf_Media_Manager/';
 s3BucketName='pbs-ingest'
@@ -16,20 +16,29 @@ junkFiles=(".DS_Store" "Thumbs.db");
 SAVEIFS=$IFS; # store default IFS variable used by shell
 IFS=$(echo -en "\n\b");
 
-# Check for required command
-type aws >/dev/null 2>&1 || {
-    echo >&2 "awscli is needed by this script. Learn how to get it at https://aws.amazon.com/cli/ or try \`pip install awscli\`"; exit 1;
+############################################################
+# Removes $junkFiles from specified directory
+# $1 sould be the directory
+############################################################
+function rm_junkfiles() {
+    [[ -z $junkFiles ]] && return; # no files specified
+    [[ -z $1 ]] && return; # no directory provided
+
+    for f in ${junkFiles[@]}; do
+        rm ${1}/${f} 2>/dev/null &
+    done;
 }
 
+
+# Check for required command
+type aws >/dev/null 2>&1 || {
+    echo >&2 "awscli is needed by this script. Learn how to get it at https://aws.amazon.com/cli/ or try \`pip install awscli\`";
+    exit 1;
+}
+
+rm_junkfiles ${localDir};
+
 # Rename local files according to directory and episode number
-echo; echo "Scanning directories and renaming files...";
-
-# delete junk files from each directory
-for file in "${junkFiles[@]}"; do
-    echo "Deleting all ${file} files.";
-    find ${localDir} -type f -name ${file} -delete;
-done;
-
 for d in `ls -d ${localDir}*/`; do
 
     d=${d%/}; # remove trailing slash
@@ -43,6 +52,8 @@ for d in `ls -d ${localDir}*/`; do
         # debugging stuff
         echo "localDir: ${localDir}; d: ${d}; basename: ${basename}";
     fi
+
+    rm_junkfiles $d;
 
     # give them a final name
     for f in `ls -p $d | grep -v /`; do # loop through only files and no dirs
@@ -123,6 +134,6 @@ if [[ -z $s3syncDebugging ]]; then
 
 fi
 
-if ! [[ -z $s3syncDebugging ]]; then echo "DEBUGGING ENABLED: sync operation not done."; fi
+[[ ! -z $s3syncDebugging ]] && echo "DEBUGGING ENABLED: sync operation not done."; 
 echo; echo "Done.";
 exit;
