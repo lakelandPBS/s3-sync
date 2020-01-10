@@ -9,13 +9,13 @@ main_sync_directory
 │   │   episode-001.mp4 (will be renamed to 001.mp4)
 │   │   episode-001.scc (will be renamed to 001.scc)
 │   
-└───show-name-of-another
+└───name-of-another-show
 │   │   episode-1002.mp4 (will be renamed to 1002.mp4)
 │   │   episode-1002.scc (will be renamed to 1002.scc)
 │   │   episode-1003.mp4 (will be renamed to 1003.mp4)
 │   │   episode-1003.scc (will be renamed to 1003.scc)
 │   
-└───show-name-yet-one-more-show
+└───yet-another-show
     │   episode-1201.mp4 (will be renamed to 1201.mp4)
     │   episode-1201.scc (will be renamed to 1201.scc)
 
